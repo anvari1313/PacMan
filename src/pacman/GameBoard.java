@@ -1,10 +1,12 @@
 package pacman;
 
+import pacman.characater.Character;
 import pacman.characater.ghost.Ghost;
 import pacman.characater.ghost.PinkGhost;
 import pacman.characater.ghost.RedGhost;
 import pacman.characater.ghost.YellowGhost;
 import pacman.characater.pac.Pac;
+import pacman.characater.staticchars.StaticChar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,17 +20,22 @@ import java.util.ArrayList;
 public class GameBoard extends DoubleBuffer {
     private Pac pac;
     private ArrayList<Ghost> ghosts;
+    private StaticChar [][]board;
+    private int boardColNum;
+    private int boardRowNum;
 
     public GameBoard(){
         super();
-        setSize(400,500);
-        setLocation(0,0);
+        MapLoader mapLoader = new MapLoader();
+        mapLoader.loadFromFile();
+        boardRowNum = mapLoader.getRow();
+        boardColNum = mapLoader.getCol();
+        board = mapLoader.loadMap();
+        setSize(mapLoader.getCol()* Character.WIDTH,mapLoader.getRow()*Character.HEIGHT);
         setBackground(Color.BLUE);
-        pac = new Pac(20,20);
-        ghosts = new ArrayList<>();
-        ghosts.add(new PinkGhost(80,80));
-        ghosts.add(new RedGhost(120,40));
-        ghosts.add(new YellowGhost(130,90));
+        pac = mapLoader.getPac();
+        ghosts = mapLoader.getGhosts();
+
         (new Repainter(this)).start();
         addKeyListener(new KeyListener() {
             @Override
@@ -63,11 +70,16 @@ public class GameBoard extends DoubleBuffer {
 
     @Override
     public void paintBuffer(Graphics g) {
+        for (int i = 0; i < boardColNum; i++) {
+            for (int j = 0; j < boardRowNum; j++) {
+                g.drawImage(board[j][i].getImage(),board[j][i].getX(),board[j][i].getY(),board[j][i].getWidth(),board[j][i].getHeight(),null);
+            }
+        }
+
         if (pac.getImage() != null)
             g.drawImage(pac.getImage(),pac.getX(),pac.getY(),pac.getWidth(),pac.getHeight(),null);
 
-        for (Ghost ghost :
-                ghosts) {
+        for (Ghost ghost : ghosts) {
             if (ghost.getImage() != null)
                 g.drawImage(ghost.getImage(), ghost.getX(), ghost.getY(), ghost.getWidth(), ghost.getHeight(), null);
         }
